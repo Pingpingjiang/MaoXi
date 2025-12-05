@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猫系性格测试 | 解锁你的专属猫咪人格</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF9E6D', // 暖橙色主色调
+            secondary: '#FFD6A5', // 浅黄辅助色
+            accent: '#FF6B95', // 粉色强调色
+            light: '#FFF9E8', // 奶油白背景
+            dark: '#5D534A', // 深棕色文字
+          },
+          fontFamily: {
+            cute: ['"Comic Sans MS"', 'Arial', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .rotate-cat {
+        transition: transform 0.3s ease;
+      }
+      .rotate-cat:hover {
+        transform: rotate(10deg) scale(1.05);
+      }
+      .btn-cute {
+        @apply bg-primary hover:bg-primary/90 text-white rounded-full py-2 px-6 
+               shadow-md hover:shadow-lg transition-all duration-300 
+               font-cute text-lg;
+      }
+      .card-cute {
+        @apply bg-white rounded-2xl shadow-xl p-6 border-2 border-secondary/30 
+               transform hover:-translate-y-1 transition-all duration-300;
+      }
+      .btn-back {
+        @apply bg-dark/80 hover:bg-dark text-white rounded-full py-2 px-4 
+               shadow-md hover:shadow-lg transition-all duration-300 
+               font-cute text-base flex items-center gap-2;
+      }
+      /* 圆形图片样式 */
+      .cat-img-circle {
+        @apply rounded-full object-cover w-48 h-48 border-4 border-secondary overflow-hidden;
+      }
+      .cat-img-circle-sm {
+        @apply rounded-full object-cover w-24 h-24 border-2 border-secondary overflow-hidden;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-light min-h-screen font-cute text-dark overflow-x-hidden">
+  <!-- 页面加载动画 -->
+  <div id="loader" class="fixed inset-0 bg-light flex flex-col items-center justify-center z-50">
+    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/ed732d0d28234d04a60dbf08473570ca.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=pEil1B%2BNkyxc2iCNMtxDu9AG%2BiY%3D" alt="猫咪加载中" class="cat-img-circle-sm mb-4 rotate-cat">
+    <p class="text-xl text-primary animate-pulse">加载猫咪能量中...</p>
+  </div>
+
+  <!-- 管理员按钮 -->
+  <button id="adminBtn" class="fixed bottom-6 right-6 bg-accent text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-accent/90 transition-all z-40">
+    <i class="fa fa-cog text-xl"></i>
+  </button>
+
+  <!-- 管理员登录模态框 -->
+  <div id="adminModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="card-cute w-full max-w-md">
+      <h2 class="text-2xl text-primary mb-6 text-center">管理员登录</h2>
+      <div class="mb-4">
+        <label class="block mb-2 text-dark">账号</label>
+        <input type="text" id="adminUser" class="w-full px-4 py-2 border border-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入管理员账号">
+      </div>
+      <div class="mb-6">
+        <label class="block mb-2 text-dark">密码</label>
+        <input type="password" id="adminPass" class="w-full px-4 py-2 border border-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入管理员密码">
+      </div>
+      <div class="flex justify-between">
+        <button id="closeAdminModal" class="btn-cute bg-dark hover:bg-dark/80">取消</button>
+        <button id="adminLoginBtn" class="btn-cute">登录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理员面板 -->
+  <div id="adminPanel" class="fixed inset-0 bg-light z-50 hidden overflow-auto">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl text-primary font-bold text-shadow">🐱 猫系测试管理面板</h2>
+        <div class="flex gap-3">
+          <!-- 返回主页面按钮 -->
+          <button id="backToMainFromAdmin" class="btn-back">
+            <i class="fa fa-home mr-1"></i>返回主页
+          </button>
+          <button id="logoutAdmin" class="btn-cute bg-dark hover:bg-dark/80">退出登录</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- 生成测试码区域 -->
+        <div class="card-cute">
+          <h3 class="text-xl text-accent mb-4">生成测试码</h3>
+          <button id="generateCodeBtn" class="btn-cute mb-6">生成新测试码</button>
+          <div id="newCodeDisplay" class="p-4 bg-secondary/20 rounded-lg min-h-[80px] flex items-center justify-center text-center text-xl font-bold">
+            点击上方按钮生成测试码
+          </div>
+        </div>
+
+        <!-- 测试码记录区域 -->
+        <div class="card-cute">
+          <h3 class="text-xl text-accent mb-4">测试码使用记录</h3>
+          <div id="codeRecords" class="max-h-[400px] overflow-auto p-4 bg-secondary/20 rounded-lg">
+            <p class="text-center text-gray-500">暂无记录</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 测试结果记录区域 -->
+      <div class="card-cute">
+        <h3 class="text-xl text-accent mb-4">测试结果记录</h3>
+        <div id="resultRecords" class="max-h-[500px] overflow-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-secondary/30">
+                <th class="p-3 border border-secondary text-left">测试码</th>
+                <th class="p-3 border border-secondary text-left">测试时间</th>
+                <th class="p-3 border border-secondary text-left">猫系性格</th>
+                <th class="p-3 border border-secondary text-left">查看答案</th>
+              </tr>
+            </thead>
+            <tbody id="resultTableBody">
+              <tr>
+                <td colspan="4" class="p-4 text-center text-gray-500">暂无测试结果</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试码输入页面 -->
+  <div id="codeInputPage" class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="card-cute w-full max-w-md">
+      <div class="text-center mb-8">
+        <!-- 可爱猫咪头像 - 替换为指定图片并设置圆形 -->
+        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/ed732d0d28234d04a60dbf08473570ca.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=pEil1B%2BNkyxc2iCNMtxDu9AG%2BiY%3D" alt="可爱猫咪" class="mx-auto mb-4 cat-img-circle-sm rotate-cat">
+        <h1 class="text-3xl text-primary font-bold text-shadow">🐱 猫系性格测试</h1>
+        <p class="text-dark/70 mt-2">输入专属测试码，解锁你的猫咪人格</p>
+      </div>
+
+      <div class="mb-6">
+        <label class="block mb-2 text-dark font-medium">测试码</label>
+        <input type="text" id="testCodeInput" class="w-full px-4 py-3 border-2 border-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-xl" placeholder="请输入6位测试码">
+        <p id="codeError" class="text-red-500 text-sm mt-2 text-center hidden">测试码无效</p>
+      </div>
+
+      <button id="startTestBtn" class="btn-cute w-full">开始测试/查看结果</button>
+    </div>
+  </div>
+
+  <!-- 测试题目页面 -->
+  <div id="questionPage" class="min-h-screen flex flex-col items-center justify-center p-4 hidden">
+    <div class="card-cute w-full max-w-md">
+      <div class="flex justify-between items-center mb-6">
+        <!-- 返回主页面按钮 -->
+        <button id="backToMainFromQuestion" class="btn-back">
+          <i class="fa fa-home mr-1"></i>返回主页
+        </button>
+        <div class="flex items-center gap-4">
+          <span id="questionNum" class="bg-secondary/50 px-4 py-1 rounded-full">第1题 / 共10题</span>
+          <div class="flex gap-2">
+            <button id="prevQuestion" class="btn-cute bg-dark/80 hover:bg-dark px-4 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>上一题</button>
+            <button id="nextQuestion" class="btn-cute px-4 py-1 text-sm">下一题</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="questionContent" class="mb-8 text-center text-xl min-h-[80px] flex items-center justify-center">
+        <!-- 题目内容会动态加载 -->
+      </div>
+
+      <div id="optionsContainer" class="grid grid-cols-1 gap-4 mb-6">
+        <!-- 选项会动态加载 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试结果页面 -->
+  <div id="resultPage" class="min-h-screen flex flex-col items-center justify-center p-4 hidden">
+    <div class="card-cute w-full max-w-lg">
+      <div id="resultContent" class="text-center">
+        <!-- 结果内容会动态生成 -->
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 mt-8">
+        <button id="shareWechatBtn" class="btn-cute bg-green-500 hover:bg-green-600">
+          <i class="fa fa-weixin mr-2"></i>分享到微信
+        </button>
+        <button id="shareQQBtn" class="btn-cute bg-blue-500 hover:bg-blue-600">
+          <i class="fa fa-qq mr-2"></i>分享到QQ
+        </button>
+        <button id="saveImageBtn" class="btn-cute bg-accent hover:bg-accent/90">
+          <i class="fa fa-download mr-2"></i>保存图片
+        </button>
+        <!-- 返回主页面按钮 -->
+        <button id="backToMainFromResult" class="btn-back">
+          <i class="fa fa-home mr-1"></i>返回主页
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分享图片弹窗 -->
+  <div id="shareImageModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-xl p-2 max-w-md w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl text-primary font-bold">分享你的猫系性格</h3>
+        <button id="closeShareModal" class="text-dark hover:text-red-500">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      <div id="shareImageContainer" class="border-2 border-secondary rounded-lg p-2 bg-light">
+        <!-- 生成的分享图片会显示在这里 -->
+      </div>
+      <p class="text-center text-sm mt-4 text-dark/70">长按图片保存，分享给好友</p>
+    </div>
+  </div>
+
+  <script>
+    // 全局数据存储
+    const appData = {
+      // 分支题库 - 每个问题根据上一题选择有不同的后续问题
+      branchQuestions: {
+        // 初始问题（第1题）
+        init: {
+          id: 1,
+          text: "周末休息，你更想做什么？",
+          options: [
+            { text: "宅在家里，看看剧撸撸猫", score: 1, next: "q1_1" }, // 偏向宅家型
+            { text: "出门探索，和朋友聚会", score: 10, next: "q1_2" } // 偏向外向型
+          ]
+        },
+        
+        // 第1题选1后的第2题
+        q1_1: {
+          id: 2,
+          text: "在家时，你更喜欢哪种放松方式？",
+          options: [
+            { text: "蜷缩在沙发上，安静发呆", score: 1, next: "q2_1" },
+            { text: "做点手工/烘焙，充实自己", score: 8, next: "q2_2" }
+          ]
+        },
+        
+        // 第1题选2后的第2题
+        q1_2: {
+          id: 2,
+          text: "出门聚会，你更喜欢哪种场合？",
+          options: [
+            { text: "热闹的派对，认识新朋友", score: 10, next: "q2_3" },
+            { text: "安静的咖啡馆，和好友聊天", score: 5, next: "q2_4" }
+          ]
+        },
+        
+        // 第2题选1后的第3题
+        q2_1: {
+          id: 3,
+          text: "独处时，突然收到朋友的邀约，你会？",
+          options: [
+            { text: "委婉拒绝，想继续独处", score: 1, next: "q3_1" },
+            { text: "犹豫后答应，不想辜负朋友", score: 4, next: "q3_2" }
+          ]
+        },
+        
+        // 第2题选2后的第3题
+        q2_2: {
+          id: 3,
+          text: "做手工时遇到困难，你会？",
+          options: [
+            { text: "自己慢慢琢磨，直到做好", score: 3, next: "q3_3" },
+            { text: "立刻查教程，快速解决问题", score: 7, next: "q3_4" }
+          ]
+        },
+        
+        // 第2题选3后的第3题
+        q2_3: {
+          id: 3,
+          text: "在派对上遇到不认识的人搭讪，你会？",
+          options: [
+            { text: "热情回应，轻松聊起来", score: 10, next: "q3_5" },
+            { text: "礼貌回应，然后找借口离开", score: 6, next: "q3_6" }
+          ]
+        },
+        
+        // 第2题选4后的第3题
+        q2_4: {
+          id: 3,
+          text: "和好友聊天，更倾向于聊什么话题？",
+          options: [
+            { text: "生活琐事，分享日常", score: 5, next: "q3_7" },
+            { text: "新奇事物，探讨想法", score: 8, next: "q3_8" }
+          ]
+        },
+        
+        // 第3题选1后的第4题
+        q3_1: {
+          id: 4,
+          text: "你更喜欢哪种类型的猫咪？",
+          options: [
+            { text: "安静的英短，默默陪伴", score: 1, next: "q4_1" },
+            { text: "温柔的布偶，粘人可爱", score: 3, next: "q4_2" }
+          ]
+        },
+        
+        // 第3题选2后的第4题
+        q3_2: {
+          id: 4,
+          text: "答应朋友后又后悔，你会？",
+          options: [
+            { text: "硬着头皮去，不想失信", score: 4, next: "q4_3" },
+            { text: "坦诚说明，希望朋友理解", score: 6, next: "q4_4" }
+          ]
+        },
+        
+        // 第3题选3后的第4题
+        q3_3: {
+          id: 4,
+          text: "完成手工作品后，你会？",
+          options: [
+            { text: "自己欣赏，珍藏起来", score: 2, next: "q4_5" },
+            { text: "分享给朋友，寻求赞美", score: 7, next: "q4_6" }
+          ]
+        },
+        
+        // 第3题选4后的第4题
+        q3_4: {
+          id: 4,
+          text: "学会新技能后，你会？",
+          options: [
+            { text: "反复练习，做到完美", score: 5, next: "q4_7" },
+            { text: "尝试创新，加入自己想法", score: 9, next: "q4_8" }
+          ]
+        },
+        
+        // 第3题选5后的第4题
+        q3_5: {
+          id: 4,
+          text: "认识新朋友后，你会？",
+          options: [
+            { text: "主动添加联系方式，保持联系", score: 10, next: "q4_9" },
+            { text: "随缘，看对方是否主动", score: 7, next: "q4_10" }
+          ]
+        },
+        
+        // 第3题选6后的第4题
+        q3_6: {
+          id: 4,
+          text: "遇到不感兴趣的话题，你会？",
+          options: [
+            { text: "礼貌倾听，偶尔回应", score: 5, next: "q4_11" },
+            { text: "巧妙转移话题，聊感兴趣的", score: 8, next: "q4_12" }
+          ]
+        },
+        
+        // 第3题选7后的第4题
+        q3_7: {
+          id: 4,
+          text: "朋友向你倾诉烦恼，你会？",
+          options: [
+            { text: "耐心倾听，给予安慰", score: 4, next: "q4_13" },
+            { text: "积极建议，帮TA解决问题", score: 7, next: "q4_14" }
+          ]
+        },
+        
+        // 第3题选8后的第4题
+        q3_8: {
+          id: 4,
+          text: "听到新奇的观点，你会？",
+          options: [
+            { text: "认真思考，表达自己看法", score: 8, next: "q4_15" },
+            { text: "好奇追问，深入了解", score: 9, next: "q4_16" }
+          ]
+        },
+        
+        // 第4题通用后续（简化展示，实际可扩展更多分支）
+        q4_1: { id: 5, text: "你觉得自己的性格更像？", options: [{ text: "慵懒的加菲猫", score: 1, next: "q5_1" }, { text: "傲娇的暹罗猫", score: 4, next: "q5_2" }] },
+        q4_2: { id: 5, text: "被人打扰休息时，你会？", options: [{ text: "温柔提醒", score: 3, next: "q5_3" }, { text: "明显不悦", score: 5, next: "q5_4" }] },
+        q4_3: { id: 5, text: "违背自己心意做事，你会？", options: [{ text: "默默接受", score: 4, next: "q5_5" }, { text: "事后抱怨", score: 6, next: "q5_6" }] },
+        q4_4: { id: 5, text: "坦诚表达想法后，你会？", options: [{ text: "担心对方生气", score: 5, next: "q5_7" }, { text: "觉得轻松自在", score: 7, next: "q5_8" }] },
+        q4_5: { id: 5, text: "自己的作品被批评，你会？", options: [{ text: "难过但不反驳", score: 2, next: "q5_9" }, { text: "据理力争", score: 6, next: "q5_10" }] },
+        q4_6: { id: 6, text: "得到赞美后，你会？", options: [{ text: "害羞但开心", score: 7, next: "q5_11" }, { text: "欣然接受并感谢", score: 8, next: "q5_12" }] },
+        q4_7: { id: 5, text: "练习过程中反复失败，你会？", options: [{ text: "坚持不懈", score: 5, next: "q5_13" }, { text: "暂时放弃", score: 4, next: "q5_14" }] },
+        q4_8: { id: 5, text: "创新尝试失败，你会？", options: [{ text: "总结经验", score: 9, next: "q5_15" }, { text: "换个思路", score: 10, next: "q5_16" }] },
+        q4_9: { id: 5, text: "新朋友很久不联系，你会？", options: [{ text: "主动问候", score: 10, next: "q5_17" }, { text: "随缘，等对方联系", score: 7, next: "q5_18" }] },
+        q4_10: { id: 5, text: "期待别人主动，你会？", options: [{ text: "默默等待", score: 7, next: "q5_19" }, { text: "暗示对方", score: 8, next: "q5_20" }] },
+        q4_11: { id: 5, text: "被迫听不感兴趣的话题，你会？", options: [{ text: "强装感兴趣", score: 5, next: "q5_21" }, { text: "走神放空", score: 4, next: "q5_22" }] },
+        q4_12: { id: 5, text: "转移话题成功，你会？", options: [{ text: "暗自得意", score: 8, next: "q5_23" }, { text: "自然聊下去", score: 9, next: "q5_24" }] },
+        q4_13: { id: 5, text: "安慰别人后，你会？", options: [{ text: "希望TA心情变好", score: 4, next: "q5_25" }, { text: "觉得自己帮到了TA", score: 6, next: "q5_26" }] },
+        q4_14: { id: 5, text: "你的建议被采纳，你会？", options: [{ text: "感到自豪", score: 7, next: "q5_27" }, { text: "觉得理所当然", score: 8, next: "q5_28" }] },
+        q4_15: { id: 5, text: "观点被反驳，你会？", options: [{ text: "理性讨论", score: 8, next: "q5_29" }, { text: "坚持己见", score: 9, next: "q5_30" }] },
+        q4_16: { id: 5, text: "深入了解后发现不认同，你会？", options: [{ text: "尊重差异", score: 9, next: "q5_31" }, { text: "表达不同看法", score: 10, next: "q5_32" }] },
+        
+        // 第5-9题（简化分支，保证最终都能到第10题）
+        q5_1: { id: 6, text: "你更喜欢什么颜色的猫？", options: [{ text: "灰色系", score: 1, next: "q6_1" }, { text: "白色系", score: 2, next: "q6_1" }] },
+        q5_2: { id: 6, text: "傲娇的你，会主动道歉吗？", options: [{ text: "绝不主动", score: 4, next: "q6_1" }, { text: "看情况", score: 5, next: "q6_1" }] },
+        q5_3: { id: 6, text: "温柔的你，有底线吗？", options: [{ text: "几乎没有", score: 3, next: "q6_1" }, { text: "当然有", score: 4, next: "q6_1" }] },
+        q5_4: { id: 6, text: "表达不悦后，你会后悔吗？", options: [{ text: "经常后悔", score: 5, next: "q6_1" }, { text: "从不后悔", score: 6, next: "q6_1" }] },
+        q5_5: { id: 6, text: "默默接受的你，会积累怨气吗？", options: [{ text: "会的", score: 4, next: "q6_1" }, { text: "不会", score: 5, next: "q6_1" }] },
+        q5_6: { id: 6, text: "抱怨后，你会觉得舒服吗？", options: [{ text: "暂时舒服", score: 6, next: "q6_1" }, { text: "更不舒服", score: 5, next: "q6_1" }] },
+        q5_7: { id: 6, text: "担心对方生气，你会？", options: [{ text: "主动示好", score: 5, next: "q6_1" }, { text: "保持距离", score: 4, next: "q6_1" }] },
+        q5_8: { id: 6, text: "轻松自在的你，会更坦诚吗？", options: [{ text: "会的", score: 7, next: "q6_1" }, { text: "看对谁", score: 6, next: "q6_1" }] },
+        q5_9: { id: 6, text: "难过的你，会自我怀疑吗？", options: [{ text: "经常", score: 2, next: "q6_1" }, { text: "偶尔", score: 3, next: "q6_1" }] },
+        q5_10: { id: 6, text: "据理力争的你，会伤人吗？", options: [{ text: "不小心会", score: 6, next: "q6_1" }, { text: "不会", score: 7, next: "q6_1" }] },
+        q5_11: { id: 6, text: "害羞的你，喜欢被关注吗？", options: [{ text: "不喜欢", score: 7, next: "q6_1" }, { text: "偷偷喜欢", score: 8, next: "q6_1" }] },
+        q5_12: { id: 6, text: "坦然的你，会骄傲吗？", options: [{ text: "会的", score: 8, next: "q6_1" }, { text: "不会", score: 7, next: "q6_1" }] },
+        q5_13: { id: 6, text: "坚持不懈的你，会固执吗？", options: [{ text: "会的", score: 5, next: "q6_1" }, { text: "有韧性", score: 6, next: "q6_1" }] },
+        q5_14: { id: 6, text: "暂时放弃的你，会放弃吗？", options: [{ text: "会的", score: 4, next: "q6_1" }, { text: "只是暂停", score: 5, next: "q6_1" }] },
+        q5_15: { id: 6, text: "总结经验的你，会进步吗？", options: [{ text: "稳步进步", score: 9, next: "q6_1" }, { text: "不一定", score: 8, next: "q6_1" }] },
+        q5_16: { id: 6, text: "换思路的你，会成功吗？", options: [{ text: "大概率会", score: 10, next: "q6_1" }, { text: "看运气", score: 9, next: "q6_1" }] },
+        q5_17: { id: 6, text: "主动问候的你，怕被冷落吗？", options: [{ text: "不怕", score: 10, next: "q6_1" }, { text: "有点怕", score: 9, next: "q6_1" }] },
+        q5_18: { id: 6, text: "随缘的你，重感情吗？", options: [{ text: "很重", score: 7, next: "q6_1" }, { text: "一般", score: 8, next: "q6_1" }] },
+        q5_19: { id: 6, text: "默默等待的你，会失望吗？", options: [{ text: "经常", score: 7, next: "q6_1" }, { text: "偶尔", score: 8, next: "q6_1" }] },
+        q5_20: { id: 6, text: "暗示的你，希望被理解吗？", options: [{ text: "非常希望", score: 8, next: "q6_1" }, { text: "顺其自然", score: 7, next: "q6_1" }] },
+        q5_21: { id: 6, text: "强装感兴趣的你，累吗？", options: [{ text: "很累", score: 5, next: "q6_1" }, { text: "还好", score: 4, next: "q6_1" }] },
+        q5_22: { id: 6, text: "走神的你，会被发现吗？", options: [{ text: "经常", score: 4, next: "q6_1" }, { text: "很少", score: 5, next: "q6_1" }] },
+        q5_23: { id: 6, text: "得意的你，会表现出来吗？", options: [{ text: "会的", score: 8, next: "q6_1" }, { text: "不会", score: 7, next: "q6_1" }] },
+        q5_24: { id: 6, text: "自然聊天的你，享受过程吗？", options: [{ text: "非常享受", score: 9, next: "q6_1" }, { text: "还可以", score: 8, next: "q6_1" }] },
+        q5_25: { id: 6, text: "善良的你，容易心软吗？", options: [{ text: "非常容易", score: 4, next: "q6_1" }, { text: "看情况", score: 5, next: "q6_1" }] },
+        q5_26: { id: 6, text: "有成就感的你，会帮助更多人吗？", options: [{ text: "会的", score: 6, next: "q6_1" }, { text: "看精力", score: 5, next: "q6_1" }] },
+        q5_27: { id: 6, text: "自豪的你，会飘吗？", options: [{ text: "会一点", score: 7, next: "q6_1" }, { text: "不会", score: 8, next: "q6_1" }] },
+        q5_28: { id: 6, text: "淡定的你，自信吗？", options: [{ text: "非常自信", score: 8, next: "q6_1" }, { text: "一般", score: 7, next: "q6_1" }] },
+        q5_29: { id: 6, text: "理性的你，会妥协吗？", options: [{ text: "会的", score: 8, next: "q6_1" }, { text: "看情况", score: 9, next: "q6_1" }] },
+        q5_30: { id: 6, text: "坚持的你，会变通吗？", options: [{ text: "很难", score: 9, next: "q6_1" }, { text: "会的", score: 8, next: "q6_1" }] },
+        q5_31: { id: 6, text: "尊重差异的你，包容吗？", options: [{ text: "非常包容", score: 9, next: "q6_1" }, { text: "一般", score: 8, next: "q6_1" }] },
+        q5_32: { id: 6, text: "表达看法的你，怕冲突吗？", options: [{ text: "不怕", score: 10, next: "q6_1" }, { text: "有点怕", score: 9, next: "q6_1" }] },
+        
+        // 第6-9题统一分支到第10题
+        q6_1: { id: 7, text: "你觉得猫咪最可爱的地方是？", options: [{ text: "软乎乎的肉垫", score: 1, next: "q7_1" }, { text: "灵活的尾巴", score: 10, next: "q7_1" }] },
+        q7_1: { id: 8, text: "养猫咪你会选择？", options: [{ text: "从小养到大", score: 1, next: "q8_1" }, { text: "领养成年猫", score: 10, next: "q8_1" }] },
+        q8_1: { id: 9, text: "猫咪犯错你会？", options: [{ text: "温柔教育", score: 1, next: "q9_1" }, { text: "适当惩罚", score: 10, next: "q9_1" }] },
+        q9_1: { id: 10, text: "如果可以变成猫，你想做？", options: [{ text: "慵懒的家猫", score: 1, next: "end" }, { text: "自由的野猫", score: 10, next: "end" }] },
+        
+        // 结束标记
+        end: { id: 10, text: "测试完成", options: [] }
+      },
+      
+      // 10种猫系性格类型 - 替换为指定图片URL并设置圆形显示
+      catTypes: [
+        { 
+          min: 10, max: 18, 
+          name: "慵懒宅猫", 
+          desc: "你就像一只慵懒的宅猫，喜欢舒适安逸的生活，享受独处的时光，对熟悉的环境有强烈的归属感。你温柔又敏感，只对亲近的人展露柔软的一面。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/ed732d0d28234d04a60dbf08473570ca.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=pEil1B%2BNkyxc2iCNMtxDu9AG%2BiY%3D" 
+        },
+        { 
+          min: 19, max: 27, 
+          name: "傲娇玳瑁猫", 
+          desc: "你是典型的傲娇玳瑁猫，外表高冷内心柔软，嘴上说着不要，身体却很诚实。你有自己的小脾气，但也会默默关心身边的人，是个可爱的矛盾体。", 
+          img: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/77e61581ce8944a897b6b3a660c04dd1.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=uATX4Zou7xVPYZBGspGr1KQva%2FE%3D" 
+        },
+        { 
+          min: 28, max: 36, 
+          name: "温柔布偶猫", 
+          desc: "你就像温柔的布偶猫，性格软糯又粘人，总是能轻易获得他人的喜爱。你善解人意，愿意倾听他人的烦恼，是身边人的暖心小棉袄。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/1a726fb4531848d5b1b3befc0fa44098.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=wm%2BQTxPtzJ8Ce9oQPtp84sJ9VqY%3D" 
+        },
+        { 
+          min: 37, max: 45, 
+          name: "活泼橘猫", 
+          desc: "你就像一只活泼的大橘猫，乐观开朗，对生活充满热情，走到哪里都是焦点。你贪吃又贪玩，身边的人都喜欢和你相处，是大家的开心果。", 
+          img: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/3ec73ca9dc0344dda9225eb382e6414c.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=F2hB5VrkmNyHBNvx5xiuiekqDKY%3D" 
+        },
+        { 
+          min: 46, max: 54, 
+          name: "好奇英短猫", 
+          desc: "你是充满好奇心的英短猫，看似淡定实则对一切都充满探索欲。你稳重又聪明，遇到事情总能冷静分析，是个可靠的小伙伴。", 
+          img: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/ffc67f85f71c47b1b9648d4ddc84ef37.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=r%2FZWRvmCanw8QlZtzG7eIpedlSM%3D" 
+        },
+        { 
+          min: 55, max: 63, 
+          name: "粘人加菲猫", 
+          desc: "你就像粘人的加菲猫，喜欢和亲近的人腻在一起，需要满满的安全感。你性格温顺，不喜欢冲突，只想被温柔以待。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/3c5bb37f05f84e2a963a0a830895f19a.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=TYKu3S4YrbczseCxvaVxSuZQZu4%3D" 
+        },
+        { 
+          min: 64, max: 72, 
+          name: "独立暹罗猫", 
+          desc: "你是独立的暹罗猫，有自己的想法和坚持，不轻易依赖他人。你聪明又傲娇，虽然看起来高冷，但认定的朋友会真心相待。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/e099d0d6e7a3408a8dbe00a59c565a46.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=2iva1WeG07wIRa0PTS4%2Bm2%2B%2Fx6o%3D" 
+        },
+        { 
+          min: 73, max: 81, 
+          name: "调皮美短猫", 
+          desc: "你就像调皮的美短猫，精力充沛，喜欢搞点小恶作剧。你活泼好动，总能给身边的人带来欢乐，是气氛的制造者。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/2194e2033fff4f6ab3151f848ac590fb.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=yvGw%2F4bzdeJ1qvjpMy8YjDXvCNc%3D" 
+        },
+        { 
+          min: 82, max: 90, 
+          name: "优雅波斯猫", 
+          desc: "你是优雅的波斯猫，注重生活品质，有自己的小讲究。你气质独特，不慌不忙，总能保持从容不迫的姿态。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/5d89c2dd42f8411a907e62fa3ed17059.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=klb7SW%2B%2FzivstTOnz6HqznPe1qE%3D" 
+        },
+        { 
+          min: 91, max: 100, 
+          name: "元气曼基康", 
+          desc: "你就像元气满满的曼基康猫，永远充满活力，对生活抱有无限热情。你乐观积极，仿佛有用不完的精力，是身边人的小太阳。", 
+          img: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/99d27ab44eb7454a99f3f3b0ac92b283.png~tplv-a9rns2rl98-image.png?rcl=20251205144604EDD7F9E14A7AD58E8C1B&rk3s=8e244e95&rrcfp=dafada99&x-expires=2081141165&x-signature=2h0zP3hRAw8jKPYYLMiAUVT59bI%3D" 
+        }
+      ],
+      
+      // 系统数据
+      validCodes: [], // 有效测试码
+      usedCodes: [],  // 已使用测试码
+      tempUsedCodes: [], // 临时使用的测试码
+      testResults: [], // 测试结果记录
+      currentCode: "", // 当前使用的测试码
+      currentQuestionKey: "init", // 当前问题key（分支标识）
+      questionPath: [], // 答题路径记录
+      userAnswers: [], // 用户答案
+      totalScore: 0, // 分数偏差
+      adminLoggedIn: false // 管理员是否登录
+    };
+
+    // DOM加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 隐藏加载动画
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('opacity-0');
+        setTimeout(() => {
+          document.getElementById('loader').style.display = 'none';
+        }, 300);
+      }, 800);
+
+      // 初始化事件监听
+      initEventListeners();
+    });
+
+    // 初始化事件监听
+    function initEventListeners() {
+      // 管理员按钮
+      document.getElementById('adminBtn').addEventListener('click', openAdminModal);
+      
+      // 管理员模态框
+      document.getElementById('closeAdminModal').addEventListener('click', closeAdminModal);
+      document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
+      
+      // 管理员面板
+      document.getElementById('logoutAdmin').addEventListener('click', adminLogout);
+      document.getElementById('generateCodeBtn').addEventListener('click', generateTestCode);
+      document.getElementById('backToMainFromAdmin').addEventListener('click', function() {
+        document.getElementById('adminPanel').classList.add('hidden');
+        document.getElementById('codeInputPage').classList.remove('hidden');
+      });
+      
+      // 题目页面返回主页面
+      document.getElementById('backToMainFromQuestion').addEventListener('click', function() {
+        document.getElementById('questionPage').classList.add('hidden');
+        document.getElementById('codeInputPage').classList.remove('hidden');
+        document.getElementById('testCodeInput').value = '';
+      });
+      
+      // 结果页面返回主页面
+      document.getElementById('backToMainFromResult').addEventListener('click', function() {
+        document.getElementById('resultPage').classList.add('hidden');
+        document.getElementById('codeInputPage').classList.remove('hidden');
+      });
+      
+      // 测试码输入页面
+      document.getElementById('startTestBtn').addEventListener('click', validateTestCode);
+      
+      // 题目页面
+      document.getElementById('prevQuestion').addEventListener('click', goToPrevQuestion);
+      document.getElementById('nextQuestion').addEventListener('click', goToNextQuestion);
+      
+      // 结果页面
+      document.getElementById('shareWechatBtn').addEventListener('click', () => shareResult('wechat'));
+      document.getElementById('shareQQBtn').addEventListener('click', () => shareResult('qq'));
+      document.getElementById('saveImageBtn').addEventListener('click', saveResultImage);
+      document.getElementById('closeShareModal').addEventListener('click', closeShareModal);
+    }
+
+    // 打开管理员登录模态框
+    function openAdminModal() {
+      document.getElementById('adminModal').classList.remove('hidden');
+    }
+
+    // 关闭管理员登录模态框
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+      document.getElementById('adminUser').value = '';
+      document.getElementById('adminPass').value = '';
+      document.getElementById('codeError').classList.add('hidden');
+    }
+
+    // 管理员登录
+    function adminLogin() {
+      const username = document.getElementById('adminUser').value;
+      const password = document.getElementById('adminPass').value;
+      
+      if (username === 'MXCesi2025' && password === 'Cesi') {
+        appData.adminLoggedIn = true;
+        closeAdminModal();
+        document.getElementById('adminPanel').classList.remove('hidden');
+        document.getElementById('codeInputPage').classList.add('hidden');
+        document.getElementById('questionPage').classList.add('hidden');
+        document.getElementById('resultPage').classList.add('hidden');
+        updateCodeRecords();
+        updateResultRecords();
+      } else {
+        alert('账号或密码错误！');
+      }
+    }
+
+    // 管理员退出登录
+    function adminLogout() {
+      appData.adminLoggedIn = false;
+      document.getElementById('adminPanel').classList.add('hidden');
+      document.getElementById('codeInputPage').classList.remove('hidden');
+    }
+
+    // 生成测试码
+    function generateTestCode() {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      appData.validCodes.push(code);
+      
+      const codeDisplay = document.getElementById('newCodeDisplay');
+      codeDisplay.innerHTML = `
+        <div class="text-primary">新测试码生成成功！</div>
+        <div class="text-2xl font-bold my-2">${code}</div>
+        <div class="text-sm text-dark/70">可重复查看测试结果</div>
+      `;
+      
+      updateCodeRecords();
+    }
+
+    // 更新测试码记录
+    function updateCodeRecords() {
+      const recordsEl = document.getElementById('codeRecords');
+      
+      if (appData.validCodes.length === 0 && appData.usedCodes.length === 0 && appData.tempUsedCodes.length === 0) {
+        recordsEl.innerHTML = '<p class="text-center text-gray-500">暂无记录</p>';
+        return;
+      }
+      
+      let html = '<div class="space-y-4">';
+      
+      if (appData.validCodes.length > 0) {
+        html += '<div>';
+        html += '<h4 class="font-bold text-green-600 mb-2">有效测试码：</h4>';
+        html += '<div class="flex flex-wrap gap-2">';
+        appData.validCodes.forEach(code => {
+          html += `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">${code}</span>`;
+        });
+        html += '</div></div>';
+      }
+      
+      if (appData.tempUsedCodes.length > 0) {
+        html += '<div>';
+        html += '<h4 class="font-bold text-yellow-600 mb-2">测试中测试码：</h4>';
+        html += '<div class="flex flex-wrap gap-2">';
+        appData.tempUsedCodes.forEach(item => {
+          html += `<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">${item.code} (${item.time})</span>`;
+        });
+        html += '</div></div>';
+      }
+      
+      if (appData.usedCodes.length > 0) {
+        html += '<div>';
+        html += '<h4 class="font-bold text-blue-600 mb-2">已完成测试码：</h4>';
+        html += '<div class="flex flex-wrap gap-2">';
+        appData.usedCodes.forEach(item => {
+          html += `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">${item.code} (${item.time})</span>`;
+        });
+        html += '</div></div>';
+      }
+      
+      html += '</div>';
+      recordsEl.innerHTML = html;
+    }
+
+    // 更新测试结果记录
+    function updateResultRecords() {
+      const tableBody = document.getElementById('resultTableBody');
+      
+      if (appData.testResults.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">暂无测试结果</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      appData.testResults.forEach(result => {
+        html += `
+          <tr class="hover:bg-secondary/20">
+            <td class="p-3 border border-secondary">${result.code}</td>
+            <td class="p-3 border border-secondary">${result.time}</td>
+            <td class="p-3 border border-secondary">${result.catType.name}</td>
+            <td class="p-3 border border-secondary">
+              <button onclick="viewAnswers('${result.code}')" class="text-primary hover:underline">查看</button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableBody.innerHTML = html;
+    }
+
+    // 查看答案详情
+    window.viewAnswers = function(code) {
+      const result = appData.testResults.find(item => item.code === code);
+      if (!result) return;
+      
+      let answersHtml = '<div class="space-y-4">';
+      result.answers.forEach((answer, index) => {
+        answersHtml += `
+          <div class="p-3 bg-light rounded-lg border border-secondary/30">
+            <p class="font-bold">第${index+1}题：${answer.questionText}</p>
+            <p class="text-primary">选择：${answer.text} (分数偏差：${answer.score})</p>
+          </div>
+        `;
+      });
+      answersHtml += '</div>';
+      
+      const tempModal = document.createElement('div');
+      tempModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+      tempModal.innerHTML = `
+        <div class="card-cute w-full max-w-lg max-h-[80vh] overflow-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl text-primary font-bold">答案详情 (${code})</h3>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-dark hover:text-red-500">
+              <i class="fa fa-times text-xl"></i>
+            </button>
+          </div>
+          <div class="mb-4 text-center">
+            <img src="${result.catType.img}" alt="${result.catType.name}" class="mx-auto cat-img-circle-sm mb-2 rotate-cat">
+            <p class="font-bold">分数偏差：${result.totalScore}</p>
+            <p class="font-bold text-primary">性格类型：${result.catType.name}</p>
+            <p>${result.catType.desc}</p>
+          </div>
+          ${answersHtml}
+        </div>
+      `;
+      document.body.appendChild(tempModal);
+    };
+
+    // 验证测试码
+    function validateTestCode() {
+      const inputCode = document.getElementById('testCodeInput').value.trim();
+      const errorEl = document.getElementById('codeError');
+      
+      errorEl.classList.add('hidden');
+      
+      if (!inputCode || inputCode.length !== 6) {
+        errorEl.textContent = '请输入6位测试码';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 检查历史结果
+      const historyResult = appData.testResults.find(item => item.code === inputCode);
+      if (historyResult) {
+        showHistoryResult(historyResult);
+        return;
+      }
+      
+      // 检查测试码有效性
+      const codeIndex = appData.validCodes.indexOf(inputCode);
+      const tempIndex = appData.tempUsedCodes.findIndex(item => item.code === inputCode);
+      
+      if (codeIndex === -1 && tempIndex === -1) {
+        errorEl.textContent = '测试码无效';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 初始化测试状态
+      appData.currentCode = inputCode;
+      appData.currentQuestionKey = "init";
+      appData.questionPath = [];
+      appData.userAnswers = [];
+      appData.totalScore = 0;
+      
+      if (codeIndex !== -1) {
+        appData.validCodes.splice(codeIndex, 1);
+        appData.tempUsedCodes.push({
+          code: inputCode,
+          time: new Date().toLocaleString()
+        });
+      }
+      
+      if (appData.adminLoggedIn) {
+        updateCodeRecords();
+      }
+      
+      // 显示题目页面
+      document.getElementById('codeInputPage').classList.add('hidden');
+      document.getElementById('questionPage').classList.remove('hidden');
+      
+      // 加载初始问题
+      loadBranchQuestion(appData.currentQuestionKey);
+    }
+
+    // 加载分支问题
+    function loadBranchQuestion(questionKey) {
+      const question = appData.branchQuestions[questionKey];
+      const questionContent = document.getElementById('questionContent');
+      const optionsContainer = document.getElementById('optionsContainer');
+      const questionNum = document.getElementById('questionNum');
+      const prevBtn = document.getElementById('prevQuestion');
+      const nextBtn = document.getElementById('nextQuestion');
+      
+      // 更新题目编号
+      questionNum.textContent = `第${question.id}题 / 共10题`;
+      
+      // 更新按钮状态
+      prevBtn.disabled = appData.questionPath.length === 0;
+      nextBtn.textContent = question.id === 10 ? '查看结果' : '下一题';
+      
+      // 加载题目内容
+      questionContent.textContent = question.text;
+      
+      // 加载选项
+      optionsContainer.innerHTML = '';
+      question.options.forEach((option, optIndex) => {
+        const optionEl = document.createElement('div');
+        // 检查是否已有答案
+        const hasAnswer = appData.userAnswers.some(ans => ans.questionId === question.id);
+        const isSelected = hasAnswer && appData.userAnswers.find(ans => ans.questionId === question.id).optionIndex === optIndex;
+        
+        optionEl.className = `p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'border-primary bg-primary/10' : 'border-secondary hover:border-primary/50'}`;
+        optionEl.innerHTML = `
+          <label class="cursor-pointer block text-center">
+            <input type="radio" name="questionOption" class="hidden" value="${optIndex}" ${isSelected ? 'checked' : ''}>
+            <span class="text-lg">${option.text}</span>
+          </label>
+        `;
+        
+        // 选项点击事件
+        optionEl.addEventListener('click', function() {
+          // 取消其他选项选中状态
+          const allOptions = optionsContainer.querySelectorAll('div');
+          allOptions.forEach(el => {
+            el.classList.remove('border-primary', 'bg-primary/10');
+            el.classList.add('border-secondary');
+          });
+          
+          // 设置当前选项选中状态
+          this.classList.remove('border-secondary');
+          this.classList.add('border-primary', 'bg-primary/10');
+          
+          // 保存答案
+          saveBranchAnswer(question, option, optIndex);
+        });
+        
+        optionsContainer.appendChild(optionEl);
+      });
+    }
+
+    // 保存分支答案
+    function saveBranchAnswer(question, option, optIndex) {
+      // 检查是否已有该题答案，有则更新
+      const answerIndex = appData.userAnswers.findIndex(ans => ans.questionId === question.id);
+      
+      const answerData = {
+        questionId: question.id,
+        questionKey: appData.currentQuestionKey,
+        questionText: question.text,
+        optionIndex: optIndex,
+        text: option.text,
+        score: option.score,
+        nextQuestionKey: option.next
+      };
+      
+      if (answerIndex !== -1) {
+        appData.userAnswers[answerIndex] = answerData;
+      } else {
+        appData.userAnswers.push(answerData);
+      }
+      
+      // 更新总分
+      calculateTotalScore();
+    }
+
+    // 计算分数偏差
+    function calculateTotalScore() {
+      appData.totalScore = appData.userAnswers.reduce((sum, answer) => {
+        return sum + answer.score;
+      }, 0);
+    }
+
+    // 上一题（分支版本）
+    function goToPrevQuestion() {
+      if (appData.questionPath.length === 0) return;
+      
+      // 移除当前路径
+      appData.questionPath.pop();
+      
+      // 获取上一题key
+      appData.currentQuestionKey = appData.questionPath.length > 0 ? appData.questionPath[appData.questionPath.length - 1] : "init";
+      
+      // 加载上一题
+      loadBranchQuestion(appData.currentQuestionKey);
+    }
+
+    // 下一题（分支版本）
+    function goToNextQuestion() {
+      const currentQuestion = appData.branchQuestions[appData.currentQuestionKey];
+      const currentAnswer = appData.userAnswers.find(ans => ans.questionId === currentQuestion.id);
+      
+      // 检查是否已选择答案
+      if (!currentAnswer) {
+        alert('请选择一个选项继续');
+        return;
+      }
+      
+      // 最后一题，显示结果
+      if (currentQuestion.id === 10) {
+        showTestResult();
+        return;
+      }
+      
+      // 记录当前路径
+      appData.questionPath.push(appData.currentQuestionKey);
+      
+      // 获取下一题key
+      appData.currentQuestionKey = currentAnswer.nextQuestionKey;
+      
+      // 加载下一题
+      loadBranchQuestion(appData.currentQuestionKey);
+    }
+
+    // 显示历史测试结果
+    function showHistoryResult(historyResult) {
+      document.getElementById('codeInputPage').classList.add('hidden');
+      document.getElementById('questionPage').classList.add('hidden');
+      document.getElementById('resultPage').classList.remove('hidden');
+      
+      const resultContent = document.getElementById('resultContent');
+      resultContent.innerHTML = `
+        <div class="mb-6">
+          <div class="inline-block bg-accent/20 px-4 py-2 rounded-full text-sm mb-4">
+            <i class="fa fa-history mr-2"></i>历史测试结果
+          </div>
+          <!-- 圆形图片显示 -->
+          <img src="${historyResult.catType.img}" alt="${historyResult.catType.name}" class="mx-auto cat-img-circle mb-4 rotate-cat">
+          <h2 class="text-3xl text-primary font-bold mb-2">你是${historyResult.catType.name}！</h2>
+          <div class="inline-block bg-secondary/30 px-4 py-1 rounded-full text-sm mb-4">
+            分数偏差：${historyResult.totalScore}分
+          </div>
+          <div class="text-sm text-dark/60 mb-2">
+            测试时间：${historyResult.time}
+          </div>
+        </div>
+        <p class="text-lg mb-6 leading-relaxed">${historyResult.catType.desc}</p>
+        <div class="p-4 bg-primary/10 rounded-xl mb-6">
+          <p class="font-bold text-center mb-2">🐱 性格小特点</p>
+          <ul class="text-left space-y-2">
+            ${getPersonalityTraits(historyResult.catType.name).map(trait => `<li><i class="fa fa-star text-primary mr-2"></i>${trait}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="mt-4 text-sm text-primary font-medium">
+          <p>✨ 可重复输入测试码查看此结果</p>
+        </div>
+      `;
+    }
+
+    // 显示测试结果
+    function showTestResult() {
+      document.getElementById('questionPage').classList.add('hidden');
+      document.getElementById('resultPage').classList.remove('hidden');
+      
+      // 确定猫系性格类型
+      let catType = appData.catTypes[0];
+      for (const type of appData.catTypes) {
+        if (appData.totalScore >= type.min && appData.totalScore <= type.max) {
+          catType = type;
+          break;
+        }
+      }
+      
+      // 更新测试码状态
+      const tempIndex = appData.tempUsedCodes.findIndex(item => item.code === appData.currentCode);
+      if (tempIndex !== -1) {
+        const tempCode = appData.tempUsedCodes.splice(tempIndex, 1)[0];
+        appData.usedCodes.push(tempCode);
+      }
+      
+      // 保存测试结果
+      const resultIndex = appData.testResults.findIndex(item => item.code === appData.currentCode);
+      const resultRecord = {
+        code: appData.currentCode,
+        time: new Date().toLocaleString(),
+        totalScore: appData.totalScore,
+        catType: catType,
+        answers: appData.userAnswers.map(ans => ({
+          questionId: ans.questionId,
+          questionText: ans.questionText,
+          optionIndex: ans.optionIndex,
+          text: ans.text,
+          score: ans.score
+        }))
+      };
+
+      if (resultIndex !== -1) {
+        appData.testResults[resultIndex] = resultRecord;
+      } else {
+        appData.testResults.push(resultRecord);
+      }
+
+      // 更新管理员面板记录
+      if (appData.adminLoggedIn) {
+        updateCodeRecords();
+        updateResultRecords();
+      }
+
+      // 渲染结果页面
+      const resultContent = document.getElementById('resultContent');
+      resultContent.innerHTML = `
+        <div class="mb-6">
+          <div class="inline-block bg-accent/20 px-4 py-2 rounded-full text-sm mb-4">
+            <i class="fa fa-certificate mr-2"></i>测试完成！
+          </div>
+          <!-- 圆形猫咪图片核心展示 -->
+          <img src="${catType.img}" alt="${catType.name}" class="mx-auto cat-img-circle mb-4 rotate-cat">
+          <h2 class="text-3xl text-primary font-bold mb-2">你是${catType.name}！</h2>
+          <div class="inline-block bg-secondary/30 px-4 py-1 rounded-full text-sm mb-4">
+            分数偏差：${appData.totalScore}分
+          </div>
+        </div>
+        <p class="text-lg mb-6 leading-relaxed">${catType.desc}</p>
+        <div class="p-4 bg-primary/10 rounded-xl mb-6">
+          <p class="font-bold text-center mb-2">🐱 性格小特点</p>
+          <ul class="text-left space-y-2">
+            ${getPersonalityTraits(catType.name).map(trait => `<li><i class="fa fa-star text-primary mr-2"></i>${trait}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="mt-4 text-sm text-primary font-medium">
+          <p>✨ 保存测试码【${appData.currentCode}】可重复查看结果</p>
+        </div>
+      `;
+    }
+
+    // 获取对应猫系性格的特点
+    function getPersonalityTraits(catTypeName) {
+      const traitsMap = {
+        "慵懒宅猫": ["享受独处时光", "对熟悉环境有安全感", "慢热型人格", "内心柔软细腻"],
+        "傲娇玳瑁猫": ["口是心非的可爱", "外冷内热", "有自己的小脾气", "重感情但不外露"],
+        "温柔布偶猫": ["善解人意", "自带治愈属性", "愿意倾听他人", "亲和力满分"],
+        "活泼橘猫": ["乐观开朗", "自带幽默感", "社交小达人", "对生活充满热情"],
+        "好奇英短猫": ["冷静理智", "好奇心强", "做事稳重", "默默观察一切"],
+        "粘人加菲猫": ["缺乏安全感", "喜欢陪伴", "温柔粘人", "害怕孤独"],
+        "独立暹罗猫": ["有主见有想法", "不轻易妥协", "自尊心强", "认定的人会真心对待"],
+        "调皮美短猫": ["精力旺盛", "喜欢新鲜感", "自带恶作剧天赋", "气氛制造者"],
+        "优雅波斯猫": ["注重细节", "有生活品味", "不慌不忙", "自带高贵气质"],
+        "元气曼基康": ["永远充满活力", "正能量满满", "行动力强", "身边人的小太阳"]
+      };
+      return traitsMap[catTypeName] || ["独特的你，拥有专属的猫咪人格～"];
+    }
+
+    // 分享结果
+    function shareResult(type) {
+      // 生成分享图片
+      html2canvas(document.getElementById('resultContent'), {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#FFF9E8'
+      }).then(canvas => {
+        const shareModal = document.getElementById('shareImageModal');
+        const imageContainer = document.getElementById('shareImageContainer');
+        
+        imageContainer.innerHTML = '';
+        imageContainer.appendChild(canvas);
+        
+        shareModal.classList.remove('hidden');
+        
+        // 模拟分享逻辑
+        if (type === 'wechat') {
+          alert('已生成分享图片，可保存后分享到微信～');
+        } else if (type === 'qq') {
+          alert('已生成分享图片，可保存后分享到QQ～');
+        }
+      });
+    }
+
+    // 保存结果图片
+    function saveResultImage() {
+      html2canvas(document.getElementById('resultContent'), {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#FFF9E8'
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `我的猫系性格-${appData.currentCode}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // 提示保存成功
+        alert('图片保存成功！可在相册/下载文件夹中查看～');
+      });
+    }
+
+    // 关闭分享弹窗
+    function closeShareModal() {
+      document.getElementById('shareImageModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
